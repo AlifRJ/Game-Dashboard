@@ -41,16 +41,33 @@ const isAuthenticated = computed(() => !!page.props.auth?.user);
                                 >
                                     Dashboard
                                 </NavLink>
+
+                                <NavLink
+                                    v-if="isAuthenticated"
+                                    :href="route('user.index')"
+                                    :active="route().current('user.index')"
+                                >
+                                    User
+                                </NavLink>
+
+                                <NavLink
+                                    v-if="isAuthenticated"
+                                    :href="route('score.index')"
+                                    :active="route().current('score.index')"
+                                >
+                                    Score
+                                </NavLink>
                             </div>
                         </div>
 
                         <div class="hidden sm:ms-6 sm:flex sm:items-center">
                             <!-- Settings Dropdown -->
-                            <div v-if="isAuthenticated" class="relative ms-3">
+                            <div class="relative ms-3">
                                 <Dropdown align="right" width="48">
                                     <template #trigger>
                                         <span class="inline-flex rounded-md">
                                             <button
+                                                v-if="isAuthenticated"
                                                 type="button"
                                                 class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                                             >
@@ -69,31 +86,8 @@ const isAuthenticated = computed(() => !!page.props.auth?.user);
                                                     />
                                                 </svg>
                                             </button>
-                                        </span>
-                                    </template>
-
-                                    <template #content>
-                                        <DropdownLink
-                                            :href="route('profile.edit')"
-                                        >
-                                            Profile
-                                        </DropdownLink>
-                                        <DropdownLink
-                                            :href="route('logout')"
-                                            method="post"
-                                            as="button"
-                                        >
-                                            Log Out
-                                        </DropdownLink>
-                                    </template>
-                                </Dropdown>
-                            </div>
-
-                            <div v-else>
-                                <Dropdown align="right" width="48">
-                                    <template #trigger>
-                                        <span class="inline-flex rounded-md">
                                             <button
+                                                v-else
                                                 type="button"
                                                 class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                                             >
@@ -117,6 +111,21 @@ const isAuthenticated = computed(() => !!page.props.auth?.user);
 
                                     <template #content>
                                         <DropdownLink
+                                            v-if="isAuthenticated"
+                                            :href="route('profile.edit')"
+                                        >
+                                            Profile
+                                        </DropdownLink>
+                                        <DropdownLink
+                                            v-if="isAuthenticated"
+                                            :href="route('logout')"
+                                            method="post"
+                                            as="button"
+                                        >
+                                            Log Out
+                                        </DropdownLink>
+                                        <DropdownLink
+                                            v-else
                                             :href="route('login')"
                                             method="get"
                                             as="button"
@@ -186,14 +195,25 @@ const isAuthenticated = computed(() => !!page.props.auth?.user);
                         >
                             Dashboard
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            v-if="isAuthenticated"
+                            :href="route('user.index')"
+                            :active="route().current('user.index')"
+                        >
+                            User
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            v-if="isAuthenticated"
+                            :href="route('score.index')"
+                            :active="route().current('score.index')"
+                        >
+                            Score
+                        </ResponsiveNavLink>
                     </div>
 
                     <!-- Responsive Settings Options -->
-                    <div
-                        v-if="isAuthenticated"
-                        class="border-t border-gray-200 pb-1 pt-4"
-                    >
-                        <div class="px-4">
+                    <div class="border-t border-gray-200 pb-1 pt-4">
+                        <div v-if="isAuthenticated" class="px-4">
                             <div class="text-base font-medium text-gray-800">
                                 {{ user.name }}
                             </div>
@@ -201,26 +221,30 @@ const isAuthenticated = computed(() => !!page.props.auth?.user);
                                 {{ user.email }}
                             </div>
                         </div>
+                        <div v-else class="px-4">
+                            <div class="text-base font-medium text-gray-800">
+                                Guest
+                            </div>
+                        </div>
 
                         <div class="mt-3 space-y-1">
-                            <ResponsiveNavLink :href="route('profile.edit')">
+                            <ResponsiveNavLink
+                                v-if="isAuthenticated"
+                                :href="route('profile.edit')"
+                            >
                                 Profile
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
+                                v-if="isAuthenticated"
                                 :href="route('logout')"
                                 method="post"
                                 as="button"
                             >
                                 Log Out
                             </ResponsiveNavLink>
-                        </div>
-                    </div>
-
-                    <div v-else class="border-t border-gray-200 pb-1 pt-4">
-                        <div class="mt-3 space-y-1">
                             <ResponsiveNavLink
+                                v-else
                                 :href="route('login')"
-                                method="get"
                                 as="button"
                             >
                                 Sign in

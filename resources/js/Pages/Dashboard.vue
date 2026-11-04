@@ -9,12 +9,12 @@ const isAuthenticated = computed(() => !!page.props.auth?.user);
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head title="Home" />
 
     <AuthenticatedLayout>
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
-                Dashboard
+                Home
             </h2>
         </template>
 
