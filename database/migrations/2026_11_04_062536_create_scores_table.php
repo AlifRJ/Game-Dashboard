@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('category');
             $table->string('difficulty');
             $table->timestamp('created_at');
-            $table->timestamp('deleted_at')->nullable();
+            $table->softDeletes();
         });
     }
 
