@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -14,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['user_id', 'score', 'category', 'difficulty'])]
 class Score extends Model
 {
-    /** @use HasFactory<UserFactory> */
+    /** @use HasFactory<ScoreFactory> */
     use HasFactory, HasUuids, SoftDeletes;
 
     public function user(): BelongsTo
