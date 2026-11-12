@@ -5,6 +5,13 @@ import DataTable, {
     type PaginatedData,
     type TrashedFilter,
 } from "@/Components/DataTable.vue";
+import {
+    EyeIcon,
+    PencilSquareIcon,
+    TrashIcon,
+    ArrowUturnLeftIcon,
+    XCircleIcon,
+} from "@heroicons/vue/24/outline";
 
 export interface User {
     id: string; // Changed from number to string for UUID
@@ -32,15 +39,35 @@ const formatUuid = (uuid: string): string => {
     return `${uuid.substring(0, 8)}...${uuid.substring(uuid.length - 4)}`;
 };
 
-const softDeleteUser = (id: string): void => {
+const showUser = (user: User): void => {
+    router.get((window as any).route("user.show", user.id));
+};
+
+const editUser = (user: User): void => {
+    router.patch((window as any).route("user.edit", user.id));
+};
+
+const softDeleteUser = (user: User): void => {
     if (confirm("Delete this user?")) {
-        router.delete((window as any).route("user.destroy", id));
+        router.delete((window as any).route("user.destroy", user.id), {
+            preserveScroll: true,
+        });
     }
 };
 
-const forceDeleteUser = (id: string): void => {
+const restoreUser = (user: User): void => {
+    if (confirm("restore this user?")) {
+        router.patch((window as any).route("user.restore", user.id), {
+            preserveScroll: true,
+        });
+    }
+};
+
+const forceDeleteUser = (user: User): void => {
     if (confirm("Permanently delete this user?")) {
-        router.delete((window as any).route("user.force-delete", id));
+        router.delete((window as any).route("user.forcedelete", user.id), {
+            preserveScroll: true,
+        });
     }
 };
 </script>
@@ -76,7 +103,6 @@ const forceDeleteUser = (id: string): void => {
                                 :key="user.id"
                                 class="hover:bg-gray-50/50"
                             >
-                                <!-- Formatted UUID with full string in title tooltip -->
                                 <td
                                     class="px-6 py-4 font-mono text-xs text-gray-500"
                                     :title="user.id"
@@ -108,20 +134,64 @@ const forceDeleteUser = (id: string): void => {
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <button
-                                        v-if="!user.deleted_at"
-                                        @click="softDeleteUser(user.id)"
-                                        class="text-rose-500 hover:underline"
+                                    <div
+                                        class="inline-flex items-center justify-end gap-2"
                                     >
-                                        Trash
-                                    </button>
-                                    <button
-                                        v-else
-                                        @click="forceDeleteUser(user.id)"
-                                        class="text-rose-700 hover:underline"
-                                    >
-                                        Force Delete
-                                    </button>
+                                        <button
+                                            type="button"
+                                            @click="showUser(user)"
+                                            title="View User"
+                                            class="p-1 rounded hover:bg-gray-100 text-green-500 hover:text-green-600"
+                                        >
+                                            <EyeIcon class="w-5 h-5" />
+                                        </button>
+
+                                        <button
+                                            v-if="!user.deleted_at"
+                                            type="button"
+                                            @click="editUser(user)"
+                                            title="Edit User"
+                                            aria-label="Edit User"
+                                            class="p-1 rounded hover:bg-gray-100 text-yellow-500 hover:text-yellow-600"
+                                        >
+                                            <PencilSquareIcon class="w-5 h-5" />
+                                        </button>
+
+                                        <button
+                                            v-if="!user.deleted_at"
+                                            type="button"
+                                            @click="softDeleteUser(user)"
+                                            title="Move to Trash"
+                                            aria-label="Move to Trash"
+                                            class="p-1 rounded hover:bg-gray-100 text-rose-500 hover:text-rose-600"
+                                        >
+                                            <TrashIcon class="w-5 h-5" />
+                                        </button>
+
+                                        <template v-else>
+                                            <button
+                                                type="button"
+                                                @click="restoreUser(user)"
+                                                title="Restore User"
+                                                aria-label="Restore User"
+                                                class="p-1 rounded hover:bg-gray-100 text-blue-500 hover:text-blue-600"
+                                            >
+                                                <ArrowUturnLeftIcon
+                                                    class="w-5 h-5"
+                                                />
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                @click="forceDeleteUser(user)"
+                                                title="Permanently Delete"
+                                                aria-label="Permanently Delete"
+                                                class="p-1 rounded hover:bg-gray-100 text-rose-500 hover:text-rose-600"
+                                            >
+                                                <XCircleIcon class="w-5 h-5" />
+                                            </button>
+                                        </template>
+                                    </div>
                                 </td>
                             </tr>
                         </template>

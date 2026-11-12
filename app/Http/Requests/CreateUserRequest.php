@@ -30,7 +30,8 @@ class CreateUserRequest extends FormRequest
             'username' => [
                 'required', 
                 'string', 
-                'alpha_dash',
+                'lowercase',
+                'alpha_dash:ascii',
                 'max:255',
                 Rule::unique(User::class),
             ],
@@ -45,7 +46,7 @@ class CreateUserRequest extends FormRequest
             'password' => [
                 'required', 
                 'string', 
-                // 'confirmed'
+                'confirmed',
                 Password::default(),
             ],
         ];

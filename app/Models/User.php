@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 #[Fillable(['name', 'username', 'email', 'password'])]
 #[Hidden(['password'])]
@@ -41,18 +42,18 @@ class User extends Authenticatable
 
     public function scopeFilter(Builder $query, array $filters): Builder
     {
-        return $query
-            ->when($filters['search'] ?? null, function (Builder $query, string $search) {
-                $search = trim($search);
+        $search = trim((string) ($filters['search'] ?? ''));
 
+        return $query
+            ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $q) use ($search) {
-                    if (is_numeric($search)) {
+                    if (Str::isUuid($search)) {
                         $q->orWhere('id', $search);
                     }
 
                     $q->orWhere('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%")
-                      ->orWhere('username', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%");
                 });
             })
             ->when($filters['trashed'] ?? null, function (Builder $query, string $trashed) {

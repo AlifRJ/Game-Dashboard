@@ -35,7 +35,8 @@ class UpdateUserRequest extends FormRequest
             'username' => [
                 'required', 
                 'string', 
-                'alpha_dash',
+                'lowercase',
+                'alpha_dash:ascii',
                 'max:255',
                 Rule::unique(User::class)->ignore($userId),
             ],
@@ -52,6 +53,7 @@ class UpdateUserRequest extends FormRequest
             'password' => [
                 'nullable', // Optional on update
                 'string', 
+                'confirmed',
                 Password::default(),
             ],
         ];

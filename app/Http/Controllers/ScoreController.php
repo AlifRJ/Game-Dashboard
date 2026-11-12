@@ -32,7 +32,7 @@ class ScoreController extends Controller
         ]);
     }
 
-    public function destroy(Score $score)
+    public function destroy(Score $score): RedirectResponse
     {
         $score->delete();
 

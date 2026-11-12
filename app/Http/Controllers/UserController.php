@@ -74,7 +74,7 @@ class UserController extends Controller
         return to_route('user.index')->with('message', 'User Updated Successfully');
     }
 
-    public function destroy(User $user)
+    public function destroy(User $user): RedirectResponse
     {
         // Prevent the logged-in user from deleting their own account
         if (Auth::id() === $user->id) {
@@ -95,6 +95,10 @@ class UserController extends Controller
 
     public function forceDelete(User $user): RedirectResponse
     {
+        if (Auth::id() === $user->id) {
+            return back()->with('error', 'You cannot permanently delete your own account.');
+        }
+
         $user->forceDelete();
 
         return to_route('user.index')->with('message', 'User Permanently Deleted');
