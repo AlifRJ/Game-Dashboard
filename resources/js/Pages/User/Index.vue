@@ -7,6 +7,7 @@ import DataTable, {
 } from "@/Components/DataTable.vue";
 import {
     EyeIcon,
+    PlusCircleIcon,
     PencilSquareIcon,
     TrashIcon,
     ArrowUturnLeftIcon,
@@ -43,8 +44,12 @@ const showUser = (user: User): void => {
     router.get((window as any).route("user.show", user.id));
 };
 
+const addUser = (): void => {
+    router.get((window as any).route("user.create"));
+};
+
 const editUser = (user: User): void => {
-    router.patch((window as any).route("user.edit", user.id));
+    router.get((window as any).route("user.edit", user.id));
 };
 
 const softDeleteUser = (user: User): void => {
@@ -76,10 +81,25 @@ const forceDeleteUser = (user: User): void => {
     <Head title="User" />
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800">
-                User
-            </h2>
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold leading-tight text-gray-800">
+                    User
+                </h2>
+
+                <button
+                    type="button"
+                    @click="addUser"
+                    class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-sky-300 hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                    <PlusCircleIcon
+                        :class="['h-4 w-4 text-sky-600']"
+                        aria-hidden="true"
+                    />
+                    <span>Add User</span>
+                </button>
+            </div>
         </template>
+
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="overflow-hidden shadow-sm sm:rounded-lg">
@@ -114,7 +134,7 @@ const forceDeleteUser = (user: User): void => {
                                         {{ user.name }}
                                     </div>
                                     <div class="text-xs text-gray-500">
-                                        @{{ user.username }} • {{ user.email }}
+                                        {{ user.username }} • {{ user.email }}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
