@@ -1,72 +1,150 @@
 # Trivio Dashboard
 
-Trivio Dashboard is the administration dashboard for [Trivio](https://nuxt-trivia-game.vercel.app/), a trivia game. It is intended to give the game owner a place to manage players and scores and understand how people are playing.
+A Laravel + Inertia dashboard for monitoring a trivia game platform. It gives game owners a quick view of player engagement, score performance, category trends, and recent activity without leaving the admin interface.
 
-## Planned capabilities
+## Overview
 
-- Browse and manage player accounts.
-- Review scores and player rankings.
-- Explore game activity and statistics, including the most-played categories and most-active players.
-- Track activity and score trends over time.
+Trivio Dashboard connects to the game analytics API when credentials are configured, and automatically falls back to a built-in demo dataset when they are not. This makes local development, demos, and repository previews work smoothly out of the box.
 
-These are the project's goals, not all currently implemented features. The app is currently an early Laravel starter with authentication, profile pages, and a basic dashboard screen. Game data integration and the Trivio-specific management and analytics features have not been implemented yet.
+The app focuses on the operational data that matters most to a trivia product team:
+
+- Real-time KPI summaries
+- Category popularity trends
+- Difficulty distribution
+- Score distribution and player performance
+- User account management
+- Authentication and profile settings
+
+## Features
+
+### Analytics overview
+
+- Executive KPI cards for total games played, active players, and average score
+- Popular categories ranking by participation
+- Difficulty breakdown for easy, medium, and hard rounds
+- Timeline view of games played over time
+- Score distribution chart for completed sessions
+- Top active players leaderboard
+
+### Product experience
+
+- Built-in authentication and profile management
+- Lazy server-side caching for analytics responses
+- Rich Chart.js tooltips with contextual data
+- Demo fallback mode for local setup and previews
+- User and score management screens built into the dashboard
 
 ## Tech stack
 
-- [Laravel 13](https://laravel.com/) and PHP 8.3+
-- [Vue 3](https://vuejs.org/) with TypeScript
-- [Inertia.js](https://inertiajs.com/) for the Laravel/Vue application bridge
-- [Vite](https://vite.dev/) for frontend development and builds
-- SQLite by default, configurable through Laravel's database settings
+- [Laravel 13](https://laravel.com/)
+- [PHP 8.3+](https://www.php.net/)
+- [Inertia.js](https://inertiajs.com/)
+- [Vue 3](https://vuejs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Chart.js](https://www.chartjs.org/)
+- [Vite](https://vite.dev/)
+- SQLite by default, with Laravel-ready support for other databases
+
+## Project structure
+
+```text
+app/
+├── Http/
+│   ├── Controllers/
+│   │   ├── DashboardController.php
+│   │   ├── UserController.php
+│   │   └── ScoreController.php
+│   └── Middleware/
+├── Models/
+│   ├── User.php
+│   └── Score.php
+resources/
+├── js/
+│   ├── Components/
+│   ├── Composables/
+│   ├── Data/
+│   ├── Layouts/
+│   └── Pages/
+│       └── Dashboard.vue
+routes/
+├── auth.php
+├── console.php
+└── web.php
+database/
+├── factories/
+├── migrations/
+└── seeders/
+```
 
 ## Getting started
 
-### Requirements
+### Prerequisites
 
 - PHP 8.3+
 - Composer
 - Node.js and npm
 
-### Setup
-
-From the project directory, install PHP dependencies, create the local environment file, and generate an application key:
+### 1. Install dependencies
 
 ```bash
 composer install
+npm install
+```
+
+### 2. Configure the environment
+
+Create your local environment file and generate the app key:
+
+```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
-On Windows PowerShell, use `Copy-Item .env.example .env` instead of `cp`.
+If you want real analytics from the upstream trivia game, add the external API settings in `.env`:
 
-The project defaults to SQLite. Ensure the database file exists, then run migrations:
-
-```bash
-php -r "file_exists('database/database.sqlite') || touch('database/database.sqlite');"
-php artisan migrate
+```dotenv
+GAME_API_URL=https://your-game-api.example.com
+GAME_API_KEY=your-api-key
 ```
 
-Install frontend dependencies and start the application and Vite development server:
+If those values are not set, the dashboard will automatically use demo analytics so the app still works during local development.
+
+### 3. Run the database
 
 ```bash
-npm install
+php artisan migrate
+php artisan db:seed
+```
+
+### 4. Start the app
+
+```bash
 composer run dev
 ```
 
-The app is available at [http://localhost:8000](http://localhost:8000). To create a production frontend build, run:
+This starts Laravel and Vite together. The application is available at:
+
+```text
+http://localhost:8000
+```
+
+To build assets for production:
 
 ```bash
 npm run build
 ```
 
-## Testing
-
-Run the Laravel test suite with:
+## Useful commands
 
 ```bash
-composer test
+php artisan test
+php artisan route:list
+php artisan migrate:fresh --seed
 ```
 
-## Project status
+## Notes
 
-This repository contains the dashboard foundation; it does not currently connect to the Trivio game or store game scores and categories. A game-data integration will be needed before the planned management and statistics can display live data.
+- Dashboard analytics are cached for five minutes to reduce repeated API calls.
+- The fallback demo data lives under the frontend data layer and is used automatically when the external API is unavailable or not configured.
+- The project is designed to work well for local demos, previews, and real game operations dashboards.
