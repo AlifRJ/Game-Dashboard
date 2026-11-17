@@ -4,34 +4,49 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
-use App\Models\User;
+use App\Services\GameApiService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class UserController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, GameApiService $gameApi): Response
     {
         $filters = $request->only(['search', 'trashed']);
 
+        $result = $gameApi->getPaginatedUsers(
+            filters: $filters,
+            perPage: $request->integer('per_page', 15),
+            forceRefresh: $request->boolean('refresh'),
+        );
+
         return Inertia::render('User/Index', [
+            'users'   => $result['users']->appends($filters),
             'filters' => $filters,
-            'users'   => User::query()
-                ->filter($filters)
-                ->latest()
-                ->paginate(10)
-                ->withQueryString(),
+            'error'   => $result['error'],
         ]);
     }
 
-    public function show(User $user): Response
-    {   
+    public function show(Request $request, string $id, GameApiService $gameApi): Response
+    {
+        abort_unless(Str::isUuid($id), 404);
+
+        $result = $gameApi->getUserById(
+            id: $id,
+            forceRefresh: $request->boolean('refresh'),
+        );
+
+        if ($result['status'] === 404) {
+            abort(404, 'User not found.');
+        }
+
         return Inertia::render('User/Details', [
-            'user' => $user
+            'user'  => $result['user'],
+            'error' => $result['error'],
         ]);
     }
 
@@ -40,66 +55,124 @@ class UserController extends Controller
         return Inertia::render('User/Form');
     }
 
-    public function store(CreateUserRequest $request): RedirectResponse
+    public function store(CreateUserRequest $request, GameApiService $gameApi): RedirectResponse
     {   
         $validated = $request->validated();
 
-        $validated['password'] = Hash::make($validated['password']);
+        $result = $gameApi->createUser([
+            'name'     => $validated['name'],
+            'username' => $validated['username'],
+            'email'    => $validated['email'],
+            'password' => $validated['password'],
+        ]);
 
-        User::create($validated);
+        if ($result['user'] === null) {
+            $errors = !empty($result['errors'])
+                ? $result['errors']
+                : ['email' => $result['message']];
+
+            throw ValidationException::withMessages($errors);
+        }
 
         return to_route('user.index')->with('message', 'User Added Successfully');
     }
 
-    public function edit(User $user): Response
+    public function edit(string $id, GameApiService $gameApi): Response
     {   
+        abort_unless(Str::isUuid($id), 404);
+
+        $result = $gameApi->getUserById($id, forceRefresh: true);
+
+        if ($result['status'] === 404 || $result['user'] === null) {
+            abort(404, 'User not found.');
+        }
+        
         return Inertia::render('User/Form', [
-            'user' => $user
+            'user' => $result['user'],
         ]);
     }
 
-    public function update(UpdateUserRequest $request, User $user): RedirectResponse
+    public function update(UpdateUserRequest $request, string $id, GameApiService $gameApi): RedirectResponse
     {   
+        abort_unless(Str::isUuid($id), 404);
+
         $validated = $request->validated();
 
-        // Hash the password if provided, or remove it so it isn't overwritten
+        $payload = [
+            'name'     => $validated['name'],
+            'username' => $validated['username'],
+            'email'    => $validated['email'],
+        ];
+
+        // Only send password if the admin actually typed a new one
         if (!empty($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
+            $payload['password'] = $validated['password'];
         }
 
-        $user->update($validated);
+        $result = $gameApi->updateUser($id, $payload);
+
+        if ($result['status'] === 404) {
+            abort(404, 'User not found.');
+        }
+
+        if ($result['user'] === null) {
+            $errors = !empty($result['errors'])
+                ? $result['errors']
+                : ['email' => $result['message']];
+
+            throw ValidationException::withMessages($errors);
+        }
 
         return to_route('user.index')->with('message', 'User Updated Successfully');
     }
 
-    public function destroy(User $user): RedirectResponse
+    public function destroy(string $id, GameApiService $gameApi): RedirectResponse
     {
-        // Prevent the logged-in user from deleting their own account
-        if (Auth::id() === $user->id) {
-            return back()->with('error', 'You cannot delete your own account.');
+        abort_unless(Str::isUuid($id), 404);
+
+        $result = $gameApi->deleteUser($id);
+
+        if ($result['status'] === 404) {
+            abort(404, 'User not found.');
         }
 
-        $user->delete();
+        if (!$result['success']) {
+            return back()->with('error', $result['message']);
+        }
 
         return to_route('user.index')->with('message', 'User Deleted Successfully');
     }
 
-    public function restore(User $user): RedirectResponse
+    public function restore(string $id, GameApiService $gameApi): RedirectResponse
     {
-        $user->restore();
+        abort_unless(Str::isUuid($id), 404);
+
+        $result = $gameApi->restoreUser($id);
+
+        if ($result['status'] === 404) {
+            abort(404, 'User not found.');
+        }
+
+        if (!$result['success']) {
+            return back()->with('error', $result['message']);
+        }
 
         return to_route('user.index')->with('message', 'User Restored Successfully');
     }
 
-    public function forceDelete(User $user): RedirectResponse
+    public function forceDelete(string $id, GameApiService $gameApi): RedirectResponse
     {
-        if (Auth::id() === $user->id) {
-            return back()->with('error', 'You cannot permanently delete your own account.');
+        abort_unless(Str::isUuid($id), 404);
+
+        $result = $gameApi->forceDeleteUser($id);
+
+        if ($result['status'] === 404) {
+            abort(404, 'User not found.');
         }
 
-        $user->forceDelete();
+        if (!$result['success']) {
+            return back()->with('error', $result['message']);
+        }
 
         return to_route('user.index')->with('message', 'User Permanently Deleted');
     }

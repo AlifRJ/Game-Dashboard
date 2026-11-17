@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { router, Head } from "@inertiajs/vue3";
+import { ref } from "vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import DataTable, {
     type PaginatedData,
     type TrashedFilter,
 } from "@/Components/DataTable.vue";
 import {
+    ArrowPathIcon,
     EyeIcon,
     PlusCircleIcon,
     PencilSquareIcon,
@@ -15,7 +17,7 @@ import {
 } from "@heroicons/vue/24/outline";
 
 export interface User {
-    id: string; // Changed from number to string for UUID
+    id: string;
     name: string;
     username: string;
     email: string;
@@ -33,6 +35,22 @@ const props = defineProps<{
     users: PaginatedData<User>;
     filters: UserFilters;
 }>();
+
+const isRefreshing = ref(false);
+
+function refreshUsers() {
+    router.reload({
+        only: ["users"],
+        data: { refresh: 1 },
+        onStart: () => {
+            isRefreshing.value = true;
+        },
+        onFinish: () => {
+            isRefreshing.value = false;
+            window.history.replaceState({}, "", window.location.pathname);
+        },
+    });
+}
 
 // Format long UUID for clean table layout (e.g., "e2a4...8f91")
 const formatUuid = (uuid: string): string => {
@@ -86,17 +104,36 @@ const forceDeleteUser = (user: User): void => {
                     User
                 </h2>
 
-                <button
-                    type="button"
-                    @click="addUser"
-                    class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-sky-300 hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                    <PlusCircleIcon
-                        :class="['h-4 w-4 text-sky-600']"
-                        aria-hidden="true"
-                    />
-                    <span>Add User</span>
-                </button>
+                <div>
+                    <button
+                        type="button"
+                        @click="addUser"
+                        class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-sky-300 hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        <PlusCircleIcon
+                            :class="['h-4 w-4 text-sky-600']"
+                            aria-hidden="true"
+                        />
+                        <span>Add User</span>
+                    </button>
+                    <button
+                        type="button"
+                        :disabled="isRefreshing"
+                        @click="refreshUsers"
+                        class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-sky-300 hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        <ArrowPathIcon
+                            :class="[
+                                'h-4 w-4 text-sky-600',
+                                { 'animate-spin': isRefreshing },
+                            ]"
+                            aria-hidden="true"
+                        />
+                        <span>{{
+                            isRefreshing ? "Refreshing..." : "Refresh Data"
+                        }}</span>
+                    </button>
+                </div>
             </div>
         </template>
 
