@@ -1,3 +1,23 @@
+import "@inertiajs/core";
+
+export interface FlashProps {
+    message?: string | null;
+    error?: string | null;
+}
+
+declare module "@inertiajs/core" {
+    interface PageProps {
+        auth: {
+            user: {
+                id: number;
+                name: string;
+                email: string;
+            } | null;
+        };
+        flash: FlashProps;
+    }
+}
+
 export interface User {
     id: number;
     name: string;

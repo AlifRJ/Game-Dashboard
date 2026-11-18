@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { router, Head } from "@inertiajs/vue3";
-import { ref } from "vue";
+import { router, Head, usePage } from "@inertiajs/vue3";
+import { ref, computed } from "vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import DataTable, {
     type PaginatedData,
     type TrashedFilter,
 } from "@/Components/DataTable.vue";
 import {
+    ExclamationCircleIcon,
+    CheckCircleIcon,
     ArrowPathIcon,
     EyeIcon,
     PlusCircleIcon,
@@ -34,6 +36,7 @@ export interface UserFilters {
 const props = defineProps<{
     users: PaginatedData<User>;
     filters: UserFilters;
+    error: String;
 }>();
 
 const isRefreshing = ref(false);
@@ -58,6 +61,7 @@ const formatUuid = (uuid: string): string => {
     return `${uuid.substring(0, 8)}...${uuid.substring(uuid.length - 4)}`;
 };
 
+// --- Action Buttons Handler --- //
 const showUser = (user: User): void => {
     router.get((window as any).route("user.show", user.id));
 };
@@ -93,6 +97,10 @@ const forceDeleteUser = (user: User): void => {
         });
     }
 };
+
+// Handle message from action
+const page = usePage();
+const flashMessage = computed(() => page.props.flash?.message);
 </script>
 
 <template>
@@ -106,6 +114,7 @@ const forceDeleteUser = (user: User): void => {
 
                 <div>
                     <button
+                        v-if="!error"
                         type="button"
                         @click="addUser"
                         class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-sky-300 hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
@@ -140,12 +149,66 @@ const forceDeleteUser = (user: User): void => {
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="overflow-hidden shadow-sm sm:rounded-lg">
+                    <!-- Notification Banner -->
+                    <div
+                        v-if="error"
+                        class="flex flex-col justify-between gap-4 rounded-xl border border-red-200/80 bg-red-50/70 p-4 shadow-sm sm:flex-row sm:items-center"
+                    >
+                        <div class="flex items-start gap-3 sm:items-center">
+                            <div
+                                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-600 ring-1 ring-inset ring-red-500/20"
+                            >
+                                <ExclamationCircleIcon
+                                    class="h-5 w-5"
+                                    aria-hidden="true"
+                                />
+                            </div>
+                            <div>
+                                <h3
+                                    class="text-sm font-semibold text-slate-900"
+                                >
+                                    Unable to Fetch Data
+                                </h3>
+                                <p class="text-sm text-slate-600">
+                                    {{ error }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        v-if="flashMessage"
+                        role="status"
+                        class="flex flex-col justify-between gap-4 rounded-xl border border-emerald-200/80 bg-emerald-50/70 p-4 shadow-sm sm:flex-row sm:items-center"
+                    >
+                        <div class="flex items-start gap-3 sm:items-center">
+                            <div
+                                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 ring-1 ring-inset ring-emerald-500/20"
+                            >
+                                <CheckCircleIcon
+                                    class="h-5 w-5"
+                                    aria-hidden="true"
+                                />
+                            </div>
+                            <div>
+                                <h3
+                                    class="text-sm font-semibold text-slate-900"
+                                >
+                                    Success
+                                </h3>
+                                <p class="text-sm text-slate-600">
+                                    {{ flashMessage }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
                     <DataTable
                         :data="users"
                         route-name="user.index"
                         :search="filters.search"
                         :trashed="filters.trashed"
                         search-placeholder="Search by UUID, name, or email..."
+                        class="mt-6"
                     >
                         <template #head>
                             <th class="px-6 py-4">UUID</th>
