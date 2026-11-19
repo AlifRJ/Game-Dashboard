@@ -175,10 +175,6 @@ const flashMessage = computed(() => page.props.flash?.message);
                             </div>
                         </div>
                     </div>
-<<<<<<< HEAD
-
-=======
->>>>>>> 9cc8ee89a65005664270895f7cb85d4a687bf18a
                     <DataTable
                         :data="scores"
                         route-name="score.index"
