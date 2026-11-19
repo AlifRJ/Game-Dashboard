@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 #[Fillable(['user_id', 'score', 'category', 'difficulty'])]
 class Score extends Model
@@ -23,21 +24,17 @@ class Score extends Model
 
     public function scopeFilter(Builder $query, array $filters): Builder
     {
-        return $query
-            ->when($filters['search'] ?? null, function (Builder $query, string $search) {
-                $search = trim($search);
+        $search = trim((string) ($filters['search'] ?? ''));
 
+        return $query
+            ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $q) use ($search) {
-                    if (is_numeric($search)) {
+                    if (Str::isUuid($search)) {
                         $q->orWhere('id', $search);
                     }
 
                     $q->orWhere('category', 'like', "%{$search}%")
-                      ->orWhere('difficulty', 'like', "%{$search}%")
-                      ->orWhereHas('user', function (Builder $userQuery) use ($search) {
-                          $userQuery->where('name', 'like', "%{$search}%")
-                                    ->orWhere('username', 'like', "%{$search}%");
-                      });
+                    ->orWhere('difficulty', 'like', "%{$search}%");
                 });
             })
             ->when($filters['trashed'] ?? null, function (Builder $query, string $trashed) {
