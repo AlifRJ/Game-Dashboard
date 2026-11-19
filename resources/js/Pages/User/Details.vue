@@ -25,6 +25,8 @@ export interface User {
 
 const props = defineProps<{
     user: User;
+    status: Number;
+    error: String;
 }>();
 
 const copied = ref(false);
@@ -109,7 +111,7 @@ const forceDeleteUser = (): void => {
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2">
+                <div v-if="!error" class="flex items-center gap-2">
                     <template v-if="!user.deleted_at">
                         <button
                             type="button"

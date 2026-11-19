@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class GameApiService
+class UserApiService
 {
     private const VERSION_KEY = 'dashboard_users_version';
 
@@ -70,19 +70,19 @@ class GameApiService
                 ];
             }
 
-            Log::warning('Game API returned an error', [
+            Log::warning('User API returned an error', [
                 'status' => $response->status(),
                 'body'   => $response->body(),
             ]);
         } catch (Throwable $e) {
-            Log::error('Game API connection failed', [
+            Log::error('User API connection failed', [
                 'exception' => $e->getMessage(),
             ]);
         }
 
         return [
             'users' => $this->buildPaginator([], 0, $perPage, $page),
-            'error' => 'Unable to fetch user data from the game server.',
+            'error' => 'Unable to fetch user data from the server.',
         ];
     }
 

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
-use App\Services\GameApiService;
+use App\Services\UserApiService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -14,7 +14,7 @@ use Inertia\Response;
 
 class UserController extends Controller
 {
-    public function index(Request $request, GameApiService $gameApi): Response
+    public function index(Request $request, UserApiService $gameApi): Response
     {
         $filters = $request->only(['search', 'trashed']);
 
@@ -31,7 +31,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function show(Request $request, string $id, GameApiService $gameApi): Response
+    public function show(Request $request, string $id, UserApiService $gameApi): Response
     {
         abort_unless(Str::isUuid($id), 404);
 
@@ -55,7 +55,7 @@ class UserController extends Controller
         return Inertia::render('User/Form');
     }
 
-    public function store(CreateUserRequest $request, GameApiService $gameApi): RedirectResponse
+    public function store(CreateUserRequest $request, UserApiService $gameApi): RedirectResponse
     {   
         $validated = $request->validated();
 
@@ -77,7 +77,7 @@ class UserController extends Controller
         return to_route('user.index')->with('message', 'User Added Successfully');
     }
 
-    public function edit(string $id, GameApiService $gameApi): Response
+    public function edit(string $id, UserApiService $gameApi): Response
     {   
         abort_unless(Str::isUuid($id), 404);
 
@@ -92,7 +92,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function update(UpdateUserRequest $request, string $id, GameApiService $gameApi): RedirectResponse
+    public function update(UpdateUserRequest $request, string $id, UserApiService $gameApi): RedirectResponse
     {   
         abort_unless(Str::isUuid($id), 404);
 
@@ -126,7 +126,7 @@ class UserController extends Controller
         return to_route('user.index')->with('message', 'User Updated Successfully');
     }
 
-    public function destroy(string $id, GameApiService $gameApi): RedirectResponse
+    public function destroy(string $id, UserApiService $gameApi): RedirectResponse
     {
         abort_unless(Str::isUuid($id), 404);
 
@@ -143,7 +143,7 @@ class UserController extends Controller
         return to_route('user.index')->with('message', 'User Deleted Successfully');
     }
 
-    public function restore(string $id, GameApiService $gameApi): RedirectResponse
+    public function restore(string $id, UserApiService $gameApi): RedirectResponse
     {
         abort_unless(Str::isUuid($id), 404);
 
@@ -160,7 +160,7 @@ class UserController extends Controller
         return to_route('user.index')->with('message', 'User Restored Successfully');
     }
 
-    public function forceDelete(string $id, GameApiService $gameApi): RedirectResponse
+    public function forceDelete(string $id, UserApiService $gameApi): RedirectResponse
     {
         abort_unless(Str::isUuid($id), 404);
 
